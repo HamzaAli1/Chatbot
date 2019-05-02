@@ -5,6 +5,7 @@
  */
 package frontend;
 
+import backend.Chatbot;
 import java.awt.Color;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
@@ -17,11 +18,14 @@ import javax.swing.text.StyledDocument;
  */
 public class MainWindow extends javax.swing.JFrame {
 
+    private final Chatbot bot;
+    
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
         initComponents();
+        bot = new Chatbot();
     }
 
     /**
@@ -96,18 +100,18 @@ public class MainWindow extends javax.swing.JFrame {
                 System.out.println("ERROR: " + ex.toString());
             }
             
-            respond();
+            respond(in);
         }
     }//GEN-LAST:event_button_inputActionPerformed
     
-    private void respond() {
+    private void respond(String input) {
         StyledDocument out = textPane_output.getStyledDocument();
             
         Style style = out.addStyle("StyleName", null);
         StyleConstants.setForeground(style, Color.BLUE);
 
         try {
-            String output = "hi im a chat bot... i dont really work right now :D"; //TODO this connects to backend
+            String output = bot.respond(input);
             out.insertString(out.getLength(), output + "\n\n", style);
         } catch (BadLocationException ex) {
             System.out.println("ERROR: " + ex.toString());
