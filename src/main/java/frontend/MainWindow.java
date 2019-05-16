@@ -7,6 +7,8 @@ package frontend;
 
 import backend.Chatbot;
 import java.awt.Color;
+import java.io.IOException;
+import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -22,8 +24,9 @@ public class MainWindow extends javax.swing.JFrame {
     
     /**
      * Creates new form MainWindow
+     * @throws java.io.IOException
      */
-    public MainWindow() {
+    public MainWindow() throws IOException {
         initComponents();
         bot = new Chatbot();
     }
@@ -100,11 +103,15 @@ public class MainWindow extends javax.swing.JFrame {
                 System.out.println("ERROR: " + ex.toString());
             }
             
-            respond(in);
+            try {
+                respond(in);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }//GEN-LAST:event_button_inputActionPerformed
     
-    private void respond(String input) {
+    private void respond(String input) throws IOException {
         StyledDocument out = textPane_output.getStyledDocument();
             
         Style style = out.addStyle("StyleName", null);
@@ -149,7 +156,11 @@ public class MainWindow extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainWindow().setVisible(true);
+                try {
+                    new MainWindow().setVisible(true);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }
