@@ -30,6 +30,7 @@ public class Chatbot {
     private final GoogleCredentials credentials;
     private final String sessionId = UUID.randomUUID().toString();
     private final String projectId;
+    private String intent;
 
     public Chatbot() throws IOException {
         credentials = GoogleCredentials.fromStream(new FileInputStream(credentials_path));
@@ -46,7 +47,6 @@ public class Chatbot {
             
             // Set the session name using the sessionId (UUID) and projectID (my-project-id)
             SessionName session = SessionName.of(projectId, sessionId);
-            System.out.println("Session Path: " + session.toString());
 
             // Set the text and language code (en-US) for the query
             Builder textInput = TextInput.newBuilder().setText(input).setLanguageCode(languageCode); //TODO same as above
@@ -60,11 +60,14 @@ public class Chatbot {
             // Display the query result
             QueryResult queryResult = response.getQueryResult();
 
+            /* DEBUG STUFF
+            System.out.println("Session Path: " + session.toString());
             System.out.println("====================");
             System.out.format("Query Text: '%s'\n", queryResult.getQueryText());
-            System.out.format("Detected Intent: %s (confidence: %f)\n",
-                    queryResult.getIntent().getDisplayName(), queryResult.getIntentDetectionConfidence());
-            System.out.format("Fulfillment Text: '%s'\n", queryResult.getFulfillmentText());
+            System.out.format("Detected Intent: %s (confidence: %f)\n", queryResult.getIntent().getDisplayName(), queryResult.getIntentDetectionConfidence());
+            System.out.format("Fulfillment Text: '%s'\n", queryResult.getFulfillmentText()); */
+            
+            intent = queryResult.getIntent().getDisplayName();
             
             return queryResult.getFulfillmentText();
             
@@ -72,8 +75,12 @@ public class Chatbot {
             return "hi im a chat bot... i dont really work right now :D\n\n" + ex.toString();
         }
     }
+    
+    public String getIntent() {
+        return intent;
+    }
 
     public static void main(String[] args) throws IOException {
-        new Chatbot().respond("hello");
+        System.out.println(new Chatbot().respond("hello"));
     }
 }

@@ -5,6 +5,8 @@
  */
 package frontend;
 
+import java.io.IOException;
+
 /**
  *
  * @author Hamza Ali
@@ -13,8 +15,9 @@ public class Main {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // TODO main runner file
         new MainWindow().setVisible(true);
     }
