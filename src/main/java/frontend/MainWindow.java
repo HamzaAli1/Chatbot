@@ -9,7 +9,12 @@ import backend.Chatbot;
 import backend.User;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.TreeSet;
 import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
@@ -25,7 +30,9 @@ public class MainWindow extends javax.swing.JFrame {
 
     private final Chatbot bot;
 
-    private final TreeSet<User> users;
+    private TreeSet<User> users;
+    
+    private final File datFile = new File("./dat/users.dat");
 
     /**
      * Creates new form MainWindow
@@ -35,7 +42,10 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() throws IOException {
         initComponents();
         bot = new Chatbot();
-        users = new TreeSet<>();
+        
+        file2data();
+        
+        textField_input.requestFocusInWindow();
     }
 
     /**
@@ -54,6 +64,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(415, 358));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         button_input.setText("Send");
         button_input.addActionListener(new java.awt.event.ActionListener() {
@@ -104,17 +119,25 @@ public class MainWindow extends javax.swing.JFrame {
         userInput();
     }//GEN-LAST:event_button_inputActionPerformed
 
-
     private void textField_inputKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textField_inputKeyPressed
         if (evt.getKeyCode() == KeyEvent.VK_ENTER)
             userInput();    }//GEN-LAST:event_textField_inputKeyPressed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        data2file();
+    }//GEN-LAST:event_formWindowClosing
 
     private void userInput() {
         String in = textField_input.getText();
         if (!in.isEmpty()) {
             textField_input.setText("");
+            
+            if (in.equals("$listusers")) {
+                System.out.println(users);
+                return;
+            }
+            
             StyledDocument out = textPane_output.getStyledDocument();
-
             Style style = out.addStyle("StyleName", null);
             StyleConstants.setForeground(style, Color.RED);
 
@@ -148,6 +171,40 @@ public class MainWindow extends javax.swing.JFrame {
             System.out.println("ERROR: " + ex.toString());
         }
     }
+    
+    private void data2file() {
+        //save all data before closing
+        try {
+            FileOutputStream fos = new FileOutputStream(datFile);
+            ObjectOutputStream oos;
+            oos = new ObjectOutputStream(fos);
+            
+            oos.writeObject(users);
+            
+            fos.close();
+            oos.close();
+        } catch (IOException ex) {
+            System.out.println(ex.toString());
+        }
+    }
+    
+    /**
+     * pulls ranking data from file
+     */
+    private void file2data() {
+        //load data from dat file
+        try {
+            FileInputStream fis = new FileInputStream(datFile);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            
+            users = (TreeSet<User>) ois.readObject();
+                        
+            fis.close();
+            ois.close();
+        } catch (IOException | ClassNotFoundException ex) {
+            System.out.println(ex.toString());
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -165,27 +222,21 @@ public class MainWindow extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainWindow.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
+        
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    new MainWindow().setVisible(true);
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
-                }
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new MainWindow().setVisible(true);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(null, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
             }
         });
     }

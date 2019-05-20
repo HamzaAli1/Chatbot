@@ -5,11 +5,13 @@
  */
 package backend;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Hamza Ali
  */
-public class User implements Comparable {
+public class User implements Comparable, Serializable {
     private String name;
     
     public User(String n) {
