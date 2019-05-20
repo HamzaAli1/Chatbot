@@ -19,6 +19,13 @@ import com.google.cloud.dialogflow.v2.TextInput.Builder;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import okhttp3.Call;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  *
@@ -45,7 +52,7 @@ public class Chatbot {
             SessionsSettings.Builder settingsBuilder = SessionsSettings.newBuilder();
             SessionsSettings sessionsSettings = settingsBuilder.setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
             SessionsClient sessionsClient = SessionsClient.create(sessionsSettings);
-            
+
             // Set the session name using the sessionId (UUID) and projectID (my-project-id)
             SessionName session = SessionName.of(projectId, sessionId);
 
@@ -67,28 +74,49 @@ public class Chatbot {
             System.out.format("Query Text: '%s'\n", queryResult.getQueryText());
             System.out.format("Detected Intent: %s (confidence: %f)\n", queryResult.getIntent().getDisplayName(), queryResult.getIntentDetectionConfidence());
             System.out.format("Fulfillment Text: '%s'\n", queryResult.getFulfillmentText()); */
-            
             intent = queryResult.getIntent().getDisplayName();
             String out = queryResult.getFulfillmentText();
-            
+
             if (intent.equals("Username")) {
                 String name = out.substring(3, out.indexOf("!"));
                 currentUser = new User(name);
             }
-            
+
             sessionsClient.shutdown();
-            
+
             return out;
-            
+
         } catch (IOException ex) {
-            return "hi im a chat bot... i dont really work right now :D\n\n" + ex.toString();
+            return "Sorry, something went wrong...\n\n" + ex.toString();
         }
     }
-    
+
+    public String search(String input) {
+        OkHttpClient client = new OkHttpClient();
+        
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://googledictionaryapi.eu-gb.mybluemix.net").newBuilder();
+        urlBuilder.addQueryParameter("define", input);
+
+        String url = urlBuilder.build().toString();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        Call call = client.newCall(request);
+        
+        try {
+            Response response = call.execute();
+            
+            return response.body().string();
+        } catch (IOException ex) {
+            return "Something went wrong...\n\n" + ex.toString();
+        }
+    }
+
     public String getIntent() {
         return intent;
     }
-    
+
     public User getUser() {
         return currentUser;
     }
@@ -99,5 +127,6 @@ public class Chatbot {
         System.out.println(test.respond("My name is Hamza."));
         System.out.println(test.respond("yes"));
         System.out.println(test.currentUser);
+        System.out.println(test.search("hello"));
     }
 }

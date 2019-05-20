@@ -168,8 +168,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         try {
             String output = bot.respond(input);
-            if (bot.getIntent().equals(prevIntent) && !prevIntent.equals("Default Fallback Intent")) {
+            if (bot.getIntent().equals(prevIntent) && (!prevIntent.equals("Default Fallback Intent") || !prevIntent.equals("Search"))) {
                 output = "There's no need to repeat yourself, I got you the first time.";
+            }
+            else if (bot.getIntent().equals("Search")) {
+                output = bot.search(output.substring(0, output.indexOf("?")));
             }
             else if (bot.getIntent().equals("Username")) {
                 output = (users.contains(bot.getUser())) ? "Hey " + bot.getUser().getName() + ". How can I help you?" : output;
