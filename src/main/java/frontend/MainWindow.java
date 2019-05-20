@@ -8,6 +8,7 @@ package frontend;
 import backend.Chatbot;
 import backend.User;
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.TreeSet;
 import javax.swing.JOptionPane;
@@ -23,11 +24,12 @@ import javax.swing.text.StyledDocument;
 public class MainWindow extends javax.swing.JFrame {
 
     private final Chatbot bot;
-    
+
     private final TreeSet<User> users;
-    
+
     /**
      * Creates new form MainWindow
+     *
      * @throws java.io.IOException
      */
     public MainWindow() throws IOException {
@@ -57,6 +59,11 @@ public class MainWindow extends javax.swing.JFrame {
         button_input.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 button_inputActionPerformed(evt);
+            }
+        });
+        textField_input.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                textField_inputKeyPressed(evt);
             }
         });
 
@@ -94,44 +101,54 @@ public class MainWindow extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void button_inputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_button_inputActionPerformed
+        userInput();
+    }//GEN-LAST:event_button_inputActionPerformed
+
+
+    private void textField_inputKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_textField_inputKeyPressed
+        if (evt.getKeyCode() == KeyEvent.VK_ENTER)
+            userInput();    }//GEN-LAST:event_textField_inputKeyPressed
+
+    private void userInput() {
         String in = textField_input.getText();
         if (!in.isEmpty()) {
             textField_input.setText("");
             StyledDocument out = textPane_output.getStyledDocument();
-            
+
             Style style = out.addStyle("StyleName", null);
             StyleConstants.setForeground(style, Color.RED);
-            
+
             try {
                 out.insertString(out.getLength(), in + "\n\n", style); //TODO maybe figure out how to make the text allign with the right side of the page.
             } catch (BadLocationException ex) {
                 System.out.println("ERROR: " + ex.toString());
             }
-            
+
             try {
                 respond(in);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
             }
         }
-    }//GEN-LAST:event_button_inputActionPerformed
-    
+    }
+
     private void respond(String input) throws IOException {
         StyledDocument out = textPane_output.getStyledDocument();
-            
+
         Style style = out.addStyle("StyleName", null);
         StyleConstants.setForeground(style, Color.BLUE);
 
         try {
             String output = bot.respond(input);
-            if (bot.getIntent().equals("Username - yes"))
+            if (bot.getIntent().equals("Username - yes")) {
                 users.add(bot.getUser());
+            }
             out.insertString(out.getLength(), output + "\n\n", style);
         } catch (BadLocationException ex) {
             System.out.println("ERROR: " + ex.toString());
         }
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -162,6 +179,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {
                     new MainWindow().setVisible(true);
