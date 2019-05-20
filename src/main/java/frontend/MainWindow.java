@@ -31,8 +31,10 @@ public class MainWindow extends javax.swing.JFrame {
     private final Chatbot bot;
 
     private TreeSet<User> users;
-    
+
     private final File datFile = new File("./dat/users.dat");
+    
+    private String prevIntent;
 
     /**
      * Creates new form MainWindow
@@ -42,9 +44,9 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() throws IOException {
         initComponents();
         bot = new Chatbot();
-        
+
         file2data();
-        
+
         textField_input.requestFocusInWindow();
     }
 
@@ -131,26 +133,29 @@ public class MainWindow extends javax.swing.JFrame {
         String in = textField_input.getText();
         if (!in.isEmpty()) {
             textField_input.setText("");
-            
-            if (in.equals("$listusers")) {
+
+            if (in.equals("$users")) {
                 System.out.println(users);
-                return;
             }
-            
-            StyledDocument out = textPane_output.getStyledDocument();
-            Style style = out.addStyle("StyleName", null);
-            StyleConstants.setForeground(style, Color.RED);
-
-            try {
-                out.insertString(out.getLength(), in + "\n\n", style); //TODO maybe figure out how to make the text allign with the right side of the page.
-            } catch (BadLocationException ex) {
-                System.out.println("ERROR: " + ex.toString());
+            else if (in.equals("$intent")) {
+                System.out.println(prevIntent);
             }
+            else {
+                StyledDocument out = textPane_output.getStyledDocument();
+                Style style = out.addStyle("StyleName", null);
+                StyleConstants.setForeground(style, Color.RED);
 
-            try {
-                respond(in);
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
+                try {
+                    out.insertString(out.getLength(), in + "\n\n", style); //TODO maybe figure out how to make the text allign with the right side of the page.
+                } catch (BadLocationException ex) {
+                    System.out.println("ERROR: " + ex.toString());
+                }
+
+                try {
+                    respond(in);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, ex.toString(), "EXCEPTION", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
@@ -163,31 +168,38 @@ public class MainWindow extends javax.swing.JFrame {
 
         try {
             String output = bot.respond(input);
-            if (bot.getIntent().equals("Username - yes")) {
+            if (bot.getIntent().equals(prevIntent) && !prevIntent.equals("Default Fallback Intent")) {
+                output = "There's no need to repeat yourself, I got you the first time.";
+            }
+            else if (bot.getIntent().equals("Username")) {
+                output = (users.contains(bot.getUser())) ? "Hey " + bot.getUser().getName() + ". How can I help you?" : output;
+            }
+            else if (bot.getIntent().equals("Username - yes")) {
                 users.add(bot.getUser());
             }
+            prevIntent = bot.getIntent();
             out.insertString(out.getLength(), output + "\n\n", style);
         } catch (BadLocationException ex) {
             System.out.println("ERROR: " + ex.toString());
         }
     }
-    
+
     private void data2file() {
         //save all data before closing
         try {
             FileOutputStream fos = new FileOutputStream(datFile);
             ObjectOutputStream oos;
             oos = new ObjectOutputStream(fos);
-            
+
             oos.writeObject(users);
-            
+
             fos.close();
             oos.close();
         } catch (IOException ex) {
             System.out.println(ex.toString());
         }
     }
-    
+
     /**
      * pulls ranking data from file
      */
@@ -196,9 +208,9 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             FileInputStream fis = new FileInputStream(datFile);
             ObjectInputStream ois = new ObjectInputStream(fis);
-            
+
             users = (TreeSet<User>) ois.readObject();
-                        
+
             fis.close();
             ois.close();
         } catch (IOException | ClassNotFoundException ex) {
@@ -227,7 +239,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
         //</editor-fold>
         //</editor-fold>
-        
+
         //</editor-fold>
         //</editor-fold>
 
