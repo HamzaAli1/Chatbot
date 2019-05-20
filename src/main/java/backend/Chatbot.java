@@ -31,6 +31,7 @@ public class Chatbot {
     private final String sessionId = UUID.randomUUID().toString();
     private final String projectId;
     private String intent;
+    private User currentUser;
 
     public Chatbot() throws IOException {
         credentials = GoogleCredentials.fromStream(new FileInputStream(credentials_path));
@@ -68,8 +69,16 @@ public class Chatbot {
             System.out.format("Fulfillment Text: '%s'\n", queryResult.getFulfillmentText()); */
             
             intent = queryResult.getIntent().getDisplayName();
+            String out = queryResult.getFulfillmentText();
             
-            return queryResult.getFulfillmentText();
+            if (intent.equals("Username")) {
+                String name = out.substring(3, out.indexOf("!"));
+                currentUser = new User(name);
+            }
+            
+            sessionsClient.shutdown();
+            
+            return out;
             
         } catch (IOException ex) {
             return "hi im a chat bot... i dont really work right now :D\n\n" + ex.toString();
@@ -79,8 +88,16 @@ public class Chatbot {
     public String getIntent() {
         return intent;
     }
+    
+    public User getUser() {
+        return currentUser;
+    }
 
     public static void main(String[] args) throws IOException {
-        System.out.println(new Chatbot().respond("hello"));
+        Chatbot test = new Chatbot();
+        System.out.println(test.respond("hello"));
+        System.out.println(test.respond("My name is Hamza."));
+        System.out.println(test.respond("yes"));
+        System.out.println(test.currentUser);
     }
 }

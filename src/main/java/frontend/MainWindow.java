@@ -6,8 +6,10 @@
 package frontend;
 
 import backend.Chatbot;
+import backend.User;
 import java.awt.Color;
 import java.io.IOException;
+import java.util.TreeSet;
 import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
@@ -22,6 +24,8 @@ public class MainWindow extends javax.swing.JFrame {
 
     private final Chatbot bot;
     
+    private final TreeSet<User> users;
+    
     /**
      * Creates new form MainWindow
      * @throws java.io.IOException
@@ -29,6 +33,7 @@ public class MainWindow extends javax.swing.JFrame {
     public MainWindow() throws IOException {
         initComponents();
         bot = new Chatbot();
+        users = new TreeSet<>();
     }
 
     /**
@@ -119,6 +124,8 @@ public class MainWindow extends javax.swing.JFrame {
 
         try {
             String output = bot.respond(input);
+            if (bot.getIntent().equals("Username - yes"))
+                users.add(bot.getUser());
             out.insertString(out.getLength(), output + "\n\n", style);
         } catch (BadLocationException ex) {
             System.out.println("ERROR: " + ex.toString());
