@@ -6,6 +6,8 @@
 package backend;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  *
@@ -16,8 +18,19 @@ public class User implements Comparable, Serializable {
     //users name -_-
     private String name;
     
+    private final ArrayList<String> interests;
+    
     public User(String n) {
         name = n;
+        interests = new ArrayList<>();
+    }
+    
+    public void addInterest(String i) {
+        interests.add(i);
+    }
+    
+    public ArrayList<String> getInterests() {
+        return interests;
     }
     
     public String getName() {
@@ -41,5 +54,17 @@ public class User implements Comparable, Serializable {
     @Override
     public String toString() {
         return name;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        return this.compareTo(o) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 83 * hash + Objects.hashCode(this.name);
+        return hash;
     }
 }

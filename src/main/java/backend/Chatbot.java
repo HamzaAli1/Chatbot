@@ -51,6 +51,9 @@ public class Chatbot {
     
     //chatbot's current user
     private User currentUser;
+    
+    //chatbot's previous action (mainly for small talk)
+    private String action;
 
     public Chatbot() throws IOException {
         credentials = GoogleCredentials.fromStream(new FileInputStream(credentials_path));
@@ -81,6 +84,8 @@ public class Chatbot {
             // Display the query result
             QueryResult queryResult = response.getQueryResult();
 
+            action = queryResult.getAction();
+            
             /* DEBUG STUFF
             System.out.println("Session Path: " + session.toString());
             System.out.println("====================");
@@ -163,6 +168,10 @@ public class Chatbot {
             System.out.println(ex.toString());
             return "Something went wrong...";
         }
+    }
+
+    public String getAction() {
+        return action;
     }
 
     public String getIntent() {

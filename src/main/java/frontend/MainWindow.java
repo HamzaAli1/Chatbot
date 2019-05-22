@@ -35,6 +35,9 @@ public class MainWindow extends javax.swing.JFrame {
     private final File datFile = new File("./dat/users.dat");
     
     private String prevIntent;
+    
+    //appilication's current user
+    private User currentUser;
 
     /**
      * Creates new form MainWindow
@@ -135,6 +138,7 @@ public class MainWindow extends javax.swing.JFrame {
         if (!in.isEmpty()) {
             textField_input.setText("");
 
+            //some debuging stuff
             if (in.equals("$users")) {
                 System.out.println(users);
             }
@@ -161,7 +165,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
 
-    //displays chatbots responce
+    //displays chatbots response
     private void respond(String input) throws IOException {
         StyledDocument out = textPane_output.getStyledDocument();
 
@@ -170,18 +174,51 @@ public class MainWindow extends javax.swing.JFrame {
 
         try {
             String output = bot.respond(input);
-            if (bot.getIntent().equals(prevIntent) && !(prevIntent.equals("Default Fallback Intent") || prevIntent.equals("Search"))) {
+            if (bot.getIntent().equals(prevIntent) && !(prevIntent.equals("Default Fallback Intent") || prevIntent.equals("Search") || prevIntent.equals("Interests"))) {
                 output = "There's no need to repeat yourself, I got you the first time.";
             }
             else if (bot.getIntent().equals("Search")) {
                 output = bot.search(output.substring(0, output.indexOf("?")));
             }
             else if (bot.getIntent().equals("Username")) {
-                output = (users.contains(bot.getUser())) ? "Hey " + bot.getUser().getName() + ". How can I help you?" : output;
+                if (users.contains(bot.getUser())) { //warning, very redundant code :(
+                    output = "Hey " + bot.getUser().getName() + ". How can I help you?";
+                    for (User u : users) {
+                        if (u.equals(bot.getUser()))
+                            currentUser = u;
+                    }
+                }
+                else
+                    currentUser = bot.getUser();
             }
             else if (bot.getIntent().equals("Username - yes")) {
                 users.add(bot.getUser());
             }
+            else if (bot.getAction().equals("smalltalk.greetings.bye")) {
+                currentUser = null;
+            }
+            else if (bot.getIntent().equals("Interests")) {
+                if (currentUser == null)
+                    output = "Cool, remind me who you are again?";
+                else {
+                    output = output.substring(0,1).toUpperCase() + output.substring(1);
+                    currentUser.addInterest(output.substring(0, output.indexOf("?")));
+                }
+            }
+            else if (bot.getIntent().equals("ListInterests")) {
+                if (currentUser == null)
+                    output = "I would say... if I knew who you were.";
+                else if (!currentUser.getInterests().isEmpty()) {
+                    output += "\nYou like ";
+                    for (String i : currentUser.getInterests())
+                        output += i.toLowerCase() + ", ";
+                    output = output.substring(0, output.length() - 2) + ".";
+                }
+                else
+                    output = "I don't believe you've told me.";
+            }
+            else if (output.isEmpty())
+                output = "Sorry, but I don't really get what you're saying...";
             prevIntent = bot.getIntent();
             out.insertString(out.getLength(), output + "\n\n", style);
         } catch (BadLocationException ex) {
@@ -220,6 +257,8 @@ public class MainWindow extends javax.swing.JFrame {
         } catch (IOException | ClassNotFoundException ex) {
             System.out.println(ex.toString());
         }
+        if (users == null)
+            users = new TreeSet<>();
     }
 
     /**
