@@ -12,6 +12,8 @@ import java.io.Serializable;
  * @author Hamza Ali
  */
 public class User implements Comparable, Serializable {
+    
+    //users name -_-
     private String name;
     
     public User(String n) {
@@ -26,6 +28,7 @@ public class User implements Comparable, Serializable {
         name = n;
     }
 
+    //checks if names are the same, else uses string compareTo
     @Override
     public int compareTo(Object o) {
         User other = (User) o;

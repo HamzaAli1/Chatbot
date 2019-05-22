@@ -129,6 +129,7 @@ public class MainWindow extends javax.swing.JFrame {
         data2file();
     }//GEN-LAST:event_formWindowClosing
 
+    //takes user input, displays it on window, and sends to chatbot
     private void userInput() {
         String in = textField_input.getText();
         if (!in.isEmpty()) {
@@ -160,6 +161,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
 
+    //displays chatbots responce
     private void respond(String input) throws IOException {
         StyledDocument out = textPane_output.getStyledDocument();
 
@@ -187,6 +189,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
 
+    //saves user data to file
     private void data2file() {
         //save all data before closing
         try {
@@ -203,9 +206,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * pulls ranking data from file
-     */
+    //pulls user data from file
     private void file2data() {
         //load data from dat file
         try {

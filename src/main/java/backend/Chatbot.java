@@ -34,11 +34,22 @@ import okhttp3.Response;
  */
 public class Chatbot {
 
+    //path to json creds
     private final String credentials_path = "azmah-5e3b2-5bbc11e9b281.json";
+    
+    //creds used to access chatbot from google servers
     private final GoogleCredentials credentials;
+    
+    //random id unique to each session
     private final String sessionId = UUID.randomUUID().toString();
+    
+    //chatbot project id
     private final String projectId;
+    
+    //last chatbot intent
     private String intent;
+    
+    //chatbot's current user
     private User currentUser;
 
     public Chatbot() throws IOException {
@@ -46,6 +57,7 @@ public class Chatbot {
         projectId = ((ServiceAccountCredentials) credentials).getProjectId();
     }
 
+    //creates connection with chatbot, then takes responce and returns as a string
     public String respond(String input) throws IOException {
         String languageCode = "en_US"; //TODO maybe dont need this
 
@@ -93,8 +105,9 @@ public class Chatbot {
         }
     }
 
+    //makes call to google dictionary api, parses responce and returns as string
     public String search(String input) {
-        String output = "";
+        String output;
 
         OkHttpClient client = new OkHttpClient();
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://googledictionaryapi.eu-gb.mybluemix.net").newBuilder();
@@ -160,6 +173,7 @@ public class Chatbot {
         return currentUser;
     }
 
+    //deubg
     public static void main(String[] args) throws IOException {
         Chatbot test = new Chatbot();
         //System.out.println(test.respond("hello"));
