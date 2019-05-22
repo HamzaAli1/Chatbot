@@ -16,11 +16,12 @@ import com.google.cloud.dialogflow.v2.SessionsClient;
 import com.google.cloud.dialogflow.v2.SessionsSettings;
 import com.google.cloud.dialogflow.v2.TextInput;
 import com.google.cloud.dialogflow.v2.TextInput.Builder;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import okhttp3.Call;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -87,29 +88,67 @@ public class Chatbot {
             return out;
 
         } catch (IOException ex) {
-            return "Sorry, something went wrong...\n\n" + ex.toString();
+            System.out.println(ex.toString());
+            return "Something went wrong...";
         }
     }
 
     public String search(String input) {
+        String output = "";
+
         OkHttpClient client = new OkHttpClient();
-        
         HttpUrl.Builder urlBuilder = HttpUrl.parse("https://googledictionaryapi.eu-gb.mybluemix.net").newBuilder();
         urlBuilder.addQueryParameter("define", input);
-
+        urlBuilder.addQueryParameter("lang", "en");
         String url = urlBuilder.build().toString();
-
         Request request = new Request.Builder()
                 .url(url)
                 .build();
         Call call = client.newCall(request);
-        
+
         try {
             Response response = call.execute();
+            String jsonString = response.body().string();
+            //System.out.println(jsonString);
             
-            return response.body().string();
+            String prevName = "", description = "";
+            JsonReader reader = new JsonReader(new StringReader(jsonString));
+            while (reader.hasNext() && description.isEmpty()) {
+                JsonToken nextToken = reader.peek();
+                //System.out.println(nextToken);
+
+                if (JsonToken.BEGIN_OBJECT.equals(nextToken)) {
+                    reader.beginObject();
+                } else if (JsonToken.BEGIN_ARRAY.equals(nextToken)) {
+                    reader.beginArray();
+                } else if (JsonToken.END_OBJECT.equals(nextToken)) {
+                    reader.endObject();
+                } else if (JsonToken.END_ARRAY.equals(nextToken)) {
+                    reader.endArray();
+                }
+                else if (JsonToken.NAME.equals(nextToken)) {
+                    String name = reader.nextName();
+                    if (name.equals("definition")) {
+                        description = reader.nextString();
+                    }
+                    else
+                        prevName = name;
+                    //System.out.println(name);
+                } else if (JsonToken.STRING.equals(nextToken)) {
+                    String value = reader.nextString();
+                    //System.out.println(value);
+                } else if (JsonToken.NUMBER.equals(nextToken)) {
+                    long value = reader.nextLong();
+                    //System.out.println(value);
+                }
+                //System.out.println();
+            }
+            output = input.substring(0,1).toUpperCase() + input.substring(1).toLowerCase() + (prevName.equals("Verb") ? " means to " : " is ") + description.toLowerCase();
+            //System.out.println(output);
+            return output;
         } catch (IOException ex) {
-            return "Something went wrong...\n\n" + ex.toString();
+            System.out.println(ex.toString());
+            return "Something went wrong...";
         }
     }
 
@@ -123,10 +162,12 @@ public class Chatbot {
 
     public static void main(String[] args) throws IOException {
         Chatbot test = new Chatbot();
-        System.out.println(test.respond("hello"));
-        System.out.println(test.respond("My name is Hamza."));
-        System.out.println(test.respond("yes"));
-        System.out.println(test.currentUser);
+        //System.out.println(test.respond("hello"));
+        //System.out.println(test.respond("My name is Hamza."));
+        //System.out.println(test.respond("yes"));
+        //System.out.println(test.currentUser);
         System.out.println(test.search("hello"));
+        //System.out.println("=====================================================");
+        //System.out.println(test.search("pokemon"));
     }
 }
