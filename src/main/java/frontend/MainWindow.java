@@ -174,7 +174,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         try {
             String output = bot.respond(input);
-            if (bot.getIntent().equals(prevIntent) && !(prevIntent.equals("Default Fallback Intent") || prevIntent.equals("Search") || prevIntent.equals("Interests"))) {
+            if (bot.getIntent().equals(prevIntent) && !(prevIntent.equals("Default Fallback Intent") || prevIntent.equals("Search") || prevIntent.equals("Interests") || bot.getAction().contains("smalltalk"))) {
                 output = "There's no need to repeat yourself, I got you the first time.";
             }
             else if (bot.getIntent().equals("Search")) {
